@@ -1,4 +1,15 @@
-spring :
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+server:
+  # 0이면 랜덤 포트 할당
+  port: 0
+
+spring:
+  application:
+    name: member-service
   redis:
     host: localhost
     port: 6379
@@ -13,7 +24,7 @@ spring :
     database-platform: org.hibernate.dialect.MySQL8Dialect
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
 jwt:
   expiration: 1000

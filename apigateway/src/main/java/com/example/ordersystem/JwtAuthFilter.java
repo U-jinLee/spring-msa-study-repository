@@ -19,13 +19,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 /**
  * Netty 기반의 Spring WebFlux 환경에서 JWT 인증을 처리하는 글로벌 필터 클래스입니다.
  */
-@Slf4j
 public class JwtAuthFilter implements GlobalFilter {
 
 	@Value("${jwt.secret-key}")
@@ -48,12 +46,12 @@ public class JwtAuthFilter implements GlobalFilter {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-		log.info("Jwt validation start");
 
 		String bearerToken = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 		String path = exchange.getRequest().getURI().getRawPath();
 
-		if (ALLOWED_PATHS.contains(path)) return chain.filter(exchange);
+		if (ALLOWED_PATHS.contains(path))
+			return chain.filter(exchange);
 
 		try {
 			if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
