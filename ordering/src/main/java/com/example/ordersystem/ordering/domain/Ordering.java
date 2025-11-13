@@ -1,10 +1,14 @@
 package com.example.ordersystem.ordering.domain;
 
 import com.example.ordersystem.common.domain.BaseTimeEntity;
-import com.example.ordersystem.member.domain.Member;
-import com.example.ordersystem.product.domain.Product;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +16,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Getter
 public class Ordering extends BaseTimeEntity {
@@ -20,14 +23,11 @@ public class Ordering extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -37,5 +37,11 @@ public class Ordering extends BaseTimeEntity {
     @Builder.Default
     private OrderStatus orderStatus = OrderStatus.ORDERED;
 
+    @Builder
+    public Ordering(long memberId, long productId, int quantity) {
+        this.memberId = memberId;
+        this.productId = productId;
+        this.quantity = quantity;
+    }
 
 }
