@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
 import io.jsonwebtoken.Claims;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 /**
  * Netty 기반의 Spring WebFlux 환경에서 JWT 인증을 처리하는 글로벌 필터 클래스입니다.
  */
+@Component
 public class JwtAuthFilter implements GlobalFilter {
 
 	@Value("${jwt.secret-key}")
