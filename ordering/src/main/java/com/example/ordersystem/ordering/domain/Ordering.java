@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-@Builder
 @Getter
 public class Ordering extends BaseTimeEntity {
     @Id
@@ -34,7 +33,6 @@ public class Ordering extends BaseTimeEntity {
 
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private OrderStatus orderStatus = OrderStatus.ORDERED;
 
     @Builder

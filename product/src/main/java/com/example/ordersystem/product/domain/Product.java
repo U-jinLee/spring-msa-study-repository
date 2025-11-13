@@ -1,35 +1,45 @@
 package com.example.ordersystem.product.domain;
 
 import com.example.ordersystem.common.domain.BaseTimeEntity;
-import com.example.ordersystem.member.domain.Member;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Product  extends BaseTimeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Product extends BaseTimeEntity {
 
-    private String name;
-    private Integer price;
-    private Integer stockQuantity;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    public void updateStockQuantity(int stockQuantity){
-        this.stockQuantity = this.stockQuantity - stockQuantity;
-    }
+	private String name;
 
+	private Integer price;
 
+	private Integer stockQuantity;
 
+	@Column(name = "member_id", nullable = false)
+	private Long memberId;
+
+	@Builder
+	public Product(String name, int price, int stockQuantity, long memberId) {
+		this.name = name;
+		this.price = price;
+		this.stockQuantity = stockQuantity;
+		this.memberId = memberId;
+	}
+
+	public void reduceStockQuantity(int stockQuantity) {
+		this.stockQuantity -= stockQuantity;
+	}
 
 }

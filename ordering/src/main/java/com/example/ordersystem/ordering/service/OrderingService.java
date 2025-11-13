@@ -1,42 +1,57 @@
 package com.example.ordersystem.ordering.service;
 
-import com.example.ordersystem.ordering.domain.Ordering;
-import com.example.ordersystem.ordering.dto.OrderCreateDto;
-import com.example.ordersystem.ordering.repository.OrderingRepository;
-
-import jakarta.persistence.EntityNotFoundException;
-
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import com.example.ordersystem.ordering.domain.Ordering;
+import com.example.ordersystem.ordering.dto.OrderCreateDto;
+import com.example.ordersystem.ordering.dto.ProductDto;
+import com.example.ordersystem.ordering.dto.ProductStockQuantityUpdateRequestDto;
+import com.example.ordersystem.ordering.repository.OrderingRepository;
 
 @Service
 public class OrderingService {
 	private final OrderingRepository orderingRepository;
-	private final MemberRepository memberRepository;
-	private final ProductRepository productRepository;
+	private final RestTemplate restTemplate;
 
 	public OrderingService(OrderingRepository orderingRepository,
-						   MemberRepository memberRepository,
-						   ProductRepository productRepository) {
+						   RestTemplate restTemplate) {
 		this.orderingRepository = orderingRepository;
-		this.memberRepository = memberRepository;
-		this.productRepository = productRepository;
+		this.restTemplate = restTemplate;
 	}
 
 	@Transactional
 	public Ordering orderCreate(OrderCreateDto orderDto, String userId) {
-		Member member = memberRepository.findById(Long.parseLong(id))
-			.orElseThrow(() -> new EntityNotFoundException("member is not found"));
-
-		Product product = productRepository.findById(orderDto.getProductId())
-			.orElseThrow(() -> new EntityNotFoundException("product is not found"));
 
 		int quantity = orderDto.getProductCount();
 
-		if (product.getStockQuantity() < quantity) {
+		String productGetUrl = "http://product-service/product/" + orderDto.getProductId();
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.set("X-USER-ID", userId);
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> httpEntity = new HttpEntity<>(httpHeaders);
+
+		ResponseEntity<ProductDto> productResponse =
+			this.restTemplate.exchange(productGetUrl, HttpMethod.GET, httpEntity, ProductDto.class);
+
+		ProductDto product = productResponse.getBody();
+
+		if (product.stockQuantity() < quantity) {
 			throw new IllegalArgumentException("재고 부족");
 		} else {
-			product.updateStockQuantity(orderDto.getProductCount());
+			String patchProductStockQuantityUrl =
+				"http://product-service/product/" + orderDto.getProductId() + "/stock-quantity";
+			HttpEntity<ProductStockQuantityUpdateRequestDto> updateEntity =
+				new HttpEntity<>(ProductStockQuantityUpdateRequestDto.from(orderDto.getProductCount()), httpHeaders);
+
+			this.restTemplate.exchange(patchProductStockQuantityUrl, HttpMethod.PATCH, updateEntity, ProductDto.class);
 		}
 
 		Ordering ordering = Ordering.builder()

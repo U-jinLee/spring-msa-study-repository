@@ -1,33 +1,43 @@
 package com.example.ordersystem.product.service;
 
-import com.example.ordersystem.member.domain.Member;
-import com.example.ordersystem.member.repository.MemberRepository;
-import com.example.ordersystem.product.domain.Product;
-import com.example.ordersystem.product.dto.ProductRegisterDto;
-import com.example.ordersystem.product.repository.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.ordersystem.product.domain.Product;
+import com.example.ordersystem.product.dto.ProductRegisterDto;
+import com.example.ordersystem.product.dto.ProductResponseDto;
+import com.example.ordersystem.product.dto.ProductStockQuantityUpdateRequestDto;
+import com.example.ordersystem.product.repository.ProductRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class ProductService {
-    private final ProductRepository productRepository;
-    private final MemberRepository memberRepository;
 
-    public ProductService(ProductRepository productRepository, MemberRepository memberRepository) {
-        this.productRepository = productRepository;
-        this.memberRepository = memberRepository;
-    }
+	private final ProductRepository productRepository;
 
-    public Product productCreate(ProductRegisterDto dto){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = memberRepository.findById(Long.parseLong(authentication.getName())).orElseThrow(()->new EntityNotFoundException("member is not found"));
+	@Transactional
+	public Product productCreate(ProductRegisterDto dto, String userId) {
+		return productRepository.save(dto.toEntity(userId));
+	}
 
-        Product product = productRepository.save(dto.toEntity(member));
-        return product;
-    }
+	@Transactional(readOnly = true)
+	public ProductResponseDto getProduct(Long id) {
+		Product product = this.productRepository.findById(id)
+			.orElseThrow(() -> new EntityNotFoundException("product is not found"));
 
+		return ProductResponseDto.from(product);
+	}
+
+	@Transactional
+	public ProductResponseDto updateStockQuantity(Long id, ProductStockQuantityUpdateRequestDto request) {
+		Product product = this.productRepository.findById(id)
+			.orElseThrow(() -> new EntityNotFoundException("product is not found"));
+
+		product.reduceStockQuantity(request.stockQuantity());
+
+		return ProductResponseDto.from(this.productRepository.save(product));
+	}
 }
