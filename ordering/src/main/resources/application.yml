@@ -6,7 +6,7 @@ eureka:
 server:
   port: 0
 
-spring :
+spring:
   application:
     name: ordering-service
   datasource:

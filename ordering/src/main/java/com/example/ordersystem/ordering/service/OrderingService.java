@@ -19,11 +19,14 @@ import com.example.ordersystem.ordering.repository.OrderingRepository;
 public class OrderingService {
 	private final OrderingRepository orderingRepository;
 	private final RestTemplate restTemplate;
+	private final ProductFeign productFeign;
 
 	public OrderingService(OrderingRepository orderingRepository,
-						   RestTemplate restTemplate) {
+						   RestTemplate restTemplate,
+						   ProductFeign productFeign) {
 		this.orderingRepository = orderingRepository;
 		this.restTemplate = restTemplate;
+		this.productFeign = productFeign;
 	}
 
 	@Transactional
@@ -57,6 +60,31 @@ public class OrderingService {
 		Ordering ordering = Ordering.builder()
 			.memberId(Long.parseLong(userId))
 			.productId(orderDto.getProductId())
+			.quantity(orderDto.getProductCount())
+			.build();
+
+		return this.orderingRepository.save(ordering);
+	}
+
+	@Transactional
+	public Ordering orderFeignCreate(OrderCreateDto orderDto, String userId) {
+
+		int quantity = orderDto.getProductCount();
+		Long productId = orderDto.getProductId();
+
+		ProductDto product = this.productFeign.getProductById(productId, userId);
+
+		if (product.stockQuantity() < quantity) {
+			throw new IllegalArgumentException("재고 부족");
+		} else {
+			this.productFeign.updateProductStockQuantity(productId,
+														 ProductStockQuantityUpdateRequestDto
+															 .from(orderDto.getProductCount()));
+		}
+
+		Ordering ordering = Ordering.builder()
+			.memberId(Long.parseLong(userId))
+			.productId(productId)
 			.quantity(orderDto.getProductCount())
 			.build();
 

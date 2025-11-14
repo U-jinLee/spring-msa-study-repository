@@ -18,9 +18,12 @@ public class OrderingController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<?> orderCreate(@RequestBody OrderCreateDto dtos, @RequestHeader("X-USER-ID") String userId) {
-		Ordering ordering = orderingService.orderCreate(dtos, userId);
-		return new ResponseEntity<>(ordering.getId(), HttpStatus.CREATED);
+	public ResponseEntity<Long> orderCreate(@RequestBody OrderCreateDto dtos,
+											@RequestHeader("X-USER-ID") String userId) {
+
+		Ordering result = orderingService.orderFeignCreate(dtos, userId);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(result.getId());
 	}
 
 }
