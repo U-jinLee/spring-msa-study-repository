@@ -40,6 +40,8 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
 	implementation 'org.springframework.kafka:spring-kafka'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 }
 
 dependencyManagement {
