@@ -6,6 +6,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -97,6 +99,7 @@ public class OrderingService {
 	}
 
 	@Transactional
+	@CircuitBreaker(name = "productService", fallbackMethod = "fallbackProductService")
 	public Ordering orderFeignKafkaCreate(OrderCreateDto orderDto, String userId) {
 
 		int quantity = orderDto.getProductCount();
@@ -118,6 +121,11 @@ public class OrderingService {
 			.build();
 
 		return this.orderingRepository.save(ordering);
+	}
+
+	// Return type and parameters must match the original method
+	public Ordering fallbackProductService(OrderCreateDto orderDto, String userId) {
+		throw new RuntimeException("상품 서비스가 현재 이용 불가능합니다. 잠시 후 다시 시도해주세요.");
 	}
 
 }

@@ -42,6 +42,7 @@ dependencies {
 	implementation 'org.springframework.kafka:spring-kafka'
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 }
 
 dependencyManagement {
