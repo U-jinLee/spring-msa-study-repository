@@ -54,8 +54,8 @@ public class ProductService {
 		try {
 			ProductQuantityKafkaUpdateRequestDto request =
 				objectMapper.readValue(message, ProductQuantityKafkaUpdateRequestDto.class);
-			this.updateStockQuantity(request.productId(),
-									 new ProductStockQuantityUpdateRequestDto(request.stockQuantity()));
+
+			this.updateStockQuantityKafka(request);
 		} catch (JsonProcessingException e) {
 			log.error("Failed to decrease stock", e);
 			// 주문 실패시 주문 취소 보상 트랜잭션 추가 필요 ->(feign client)
@@ -63,4 +63,12 @@ public class ProductService {
 		}
 	}
 
+	public void updateStockQuantityKafka(ProductQuantityKafkaUpdateRequestDto requestDto) {
+		Product product = this.productRepository.findById(requestDto.productId())
+			.orElseThrow(() -> new EntityNotFoundException("product is not found"));
+
+		product.reduceStockQuantity(requestDto.stockQuantity());
+
+		ProductResponseDto.from(this.productRepository.save(product));
+	}
 }
