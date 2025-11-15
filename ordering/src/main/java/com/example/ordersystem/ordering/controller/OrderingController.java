@@ -21,7 +21,7 @@ public class OrderingController {
 	public ResponseEntity<Long> orderCreate(@RequestBody OrderCreateDto dtos,
 											@RequestHeader("X-USER-ID") String userId) {
 
-		Ordering result = orderingService.orderFeignCreate(dtos, userId);
+		Ordering result = orderingService.orderFeignKafkaCreate(dtos, userId);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(result.getId());
 	}
